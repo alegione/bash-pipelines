@@ -1,8 +1,13 @@
 #!/bin/bash
+# A few lines of code that can be handy to include at the start of any bash script.
+# Mounts shared folders, sets terminal colour variables and maximises window size
+
 
 #get CPU metrics
 CORES=$(nproc)
 
+# The below can be adjusted if you have a folder that requires mounting (which is not auto-mounted). Requires a text file
+# 'mount_test.txt' in the target directory
 if [ ! -e Desktop/Shared_folder/mount_test.txt ]; then
 	sudo mount -t vboxsf Sequences Desktop/Shared_folder/
 fi
