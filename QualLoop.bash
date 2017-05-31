@@ -1,8 +1,6 @@
 #!/bin/bash
 
 # Use the below to get a table of the quality scores from fastqc output, will then have to send it to an R script
-# awk '/>>Per sequence quality scores/,/>>END_MODULE/' Desktop/Shared_folder/CpecFinal/fastQC_output/fastqc_data.txt  | grep -v ">>"
-#echo $(Rscript Desktop/Shared_folder/Scripts/R/GetQualScore.R Desktop/Shared_folder/CpecFinal)
 echo -e "Genome\tOriginal Average Quality\tTrimmed Average Quality" > Qualtable.tsv
 rm -r tmp
 while read i; do
