@@ -1,4 +1,0 @@
-ls Desktop/Shared_folder/CpecFinal/spades_output/ | while read i; do echo $i; echo -e "$i\t$(perl blast_summary.pl Desktop/Shared_folder/CpecFinal/spades_output/$i/contig_summary/$i.ref.TOP.blastn.tab | head -2 | tail -1)"; echo -e "$i\t$(perl blast_summary.pl Desktop/Shared_folder/CpecFinal/spades_output/$i/contig_summary/$i.ref.TOP.blastn.tab | tail -1)"; done
-
-ls Desktop/Shared_folder/CpecFinal/spades_output/ | while read i; do echo $i; echo -e "$i\t$(perl blast_summary.pl Desktop/Shared_folder/CpecFinal/spades_output/$i/contig_summary/$i.ref.TOP.blastn.tab | head -2 | tail -1)" >> Desktop/Shared_folder/CpecFinal/Results_Summary/contig_blast_summary_whole.tsv; echo -e "$i\t$(perl blast_summary.pl Desktop/Shared_folder/CpecFinal/spades_output/$i/contig_summary/$i.ref.TOP.blastn.tab | tail -1)" >> Desktop/Shared_folder/CpecFinal/Results_Summary/contig_blast_summary_1000.tsv; done
-
