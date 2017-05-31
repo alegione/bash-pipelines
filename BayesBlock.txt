@@ -3,37 +3,32 @@ begin mrbayes;
 	warnings issued before files are overwritten and automatic
 	termination of chains after the prespecified number of generations.]
 
-
 	log start replace filename = DIR/FILE.mrbayes.coding.log;
 
 	set autoclose=yes nowarn=yes Seed=123456789 Swapseed=987654321;
 	[unlink shape=(all) pinvar=(all) statefreq=(all) revmat=(all);]
 	
-	
-
-	[set dir="/roary_last/Bayes/SNPcore";]
+	[set dir=DIR;]
 	[lset Nucmodel=4by4;]
 	lset Nst=NST; [1,2,6]
 	lset rates=RATES; [Equal/Gamma(+G)/Propinv(+I)/Invgamma(+I+G)/Adgamma]
 	lset ngammacat=4;
 
-[4 rate categories are sufficient. More will increase the accuracy of the likelihood calculations. The time it will take to complete the analysis will increase in direct proportion to the number of rate categories you use, and the effects on the results will be negligible in most cases.]
+	[4 rate categories are sufficient. More will increase the accuracy of the likelihood calculations. The time it will take 	to complete the analysis will increase in direct proportion to the number of rate categories you use, and the effects on 	the results will be negligible in most cases.]
 	
 
-[We now need to set the priors for our model. There are six types of parameters in the model: the topology, the branch lengths, the four stationary frequencies of the nucleotides, the six different nucleotide substitution rates, the proportion of invariable sites, and the shape parameter of the gamma distribution of rate variation. The default priors in MrBayes work well for most analyses, and we will not change any of them for now. By typing help prset you can obtain a list of the default settings for the parameters in your model. The table at the end of the help information reads: ]
+	[We now need to set the priors for our model. There are six types of parameters in the model: the topology, the branch 		lengths, the four stationary frequencies of the nucleotides, the six different nucleotide substitution rates, the 		proportion of invariable sites, and the shape parameter of the gamma distribution of rate variation. The default priors 	in MrBayes work well for most analyses, and we will not change any of them for now. By typing help prset you can obtain 	a list of the default settings for the parameters in your model.]
 
-	[prset shapepr=exponential(10.0);]
 	prset statefreqpr=STATEFREQPR;	[fixed(equal) if using JC or SYM model, otherwise Dirichlet(1.0,1.0,1.0,1.0)]
+	
+	[prset shapepr=exponential(10.0);]
 	[prset statefreqpr=Dirichlet(1,1,1,1);	change to represent known proportion of A,C,G,T for example, to 150,130,90,140]
-	[prset Shapepr=Uniform(0.0,200.0);	Change to Uniform/Exponential/Fixed, determines the prior for the alpha(shape) parameter of the gamma distribution of rate variation]
-	[prset Pinvarpr=Uniform(0.0,1.0);	Uniform/Fixed, The prior for the proportion of invariable sites, The default is a uniform distribution between 0 and 1, appropriate if we don't assume any prior knowledge about the proportion of invariable sites]
+	[prset Shapepr=Uniform(0.0,200.0);	Change to Uniform/Exponential/Fixed, determines the prior for the alpha(shape) 			parameter of the gamma distribution of rate variation]
+	[prset Pinvarpr=Uniform(0.0,1.0);	Uniform/Fixed, The prior for the proportion of invariable sites, The default is 		a uniform distribution between 0 and 1, appropriate if we don't assume any prior knowledge about the proportion 		of invariable sites]
 	
 	[prset brlenspr=unconstrained:gammadir(1.0,0.1,1.0,1.0); The Brlenspr parameter can either be set to unconstrained or clock-constrained. For trees without a molecular clock (unconstrained) the branch length prior can be set either to exponential or uniform. The default exponential prior with parameter 10.0 should work well for most analyses. It has an expectation of 1/10 = 0.1 but allows a wide range of branch length values (theoretically from 0 to infinity). Because the likelihood values vary much more rapidly for short branches than for long branches, an exponential prior on branch lengths is closer to being uninformative than a uniform prior.]
 
 
-
-
-	
 	mcmcp Ngen=1000000; [set this to 1,000,000 for final]
 	mcmcp Nruns=2;
 	mcmcp Nchains=4;
@@ -41,12 +36,12 @@ begin mrbayes;
 	[mcmcp Reweight=0.00 v 0.00 ^;]
 	mcmcp Swapfreq=1;
 	mcmcp Nswaps=1;
-	mcmcp Samplefreq=1000; [set this to 1000]
-	mcmcp Printfreq=10000; [set this to 1000]
+	mcmcp Samplefreq=1000; 
+	mcmcp Printfreq=10000; 
 	mcmcp Printall=No;
 	mcmcp Printmax=8;
 	mcmcp Mcmcdiagn=Yes;
-	mcmcp Diagnfreq=1000; [set this to 1000] [MrBayes will now calculate various run diagnostics every Diagnfreq generation and print them to a file with the name <Filename>.mcmc]
+	mcmcp Diagnfreq=1000; [MrBayes will now calculate various run diagnostics every Diagnfreq generation and print them to a file with the name <Filename>.mcmc]
 	mcmcp Diagnstat=Avgstddev;
 	mcmcp Minpartfreq=0.20;
 	mcmcp Allchains=No;
@@ -54,22 +49,19 @@ begin mrbayes;
 	[mcmcp Burnin=0;]
 	mcmcp Relburnin=Yes;
 	mcmcp Burninfrac=0.25;
-	mcmcp Stoprule=Yes;
+	mcmcp Stoprule=No; [Set this to "Yes" if you would like iterations to cease when standard deviation reaches Stopval]
 	mcmcp Stopval=0.01;
 	mcmcp Savetrees=No;
-	mcmcp Checkpoint=No;
-	mcmcp Checkfreq=100000; [must be at least 100][set this to 10000]
-	mcmcp Filename=DIR/FILE;
+	mcmcp Checkpoint=Yes;
+	mcmcp Checkfreq=10000; 
+	mcmcp Filename=DIR/FILE; [Replace with output filename]
 	mcmcp Startparams=Current;
 	mcmcp Starttree=Current;
 	mcmcp Nperts=0;
 	mcmcp Data=Yes;
 	mcmcp Ordertaxa=No;
-
-
-	[Sets starting tree. If no tree is defined, a random tree is used.]
-	[mcmcp Starttree=Current;]
-	mcmc;
+	[mcmcp Starttree=Current;] [Sets starting tree. If no tree is defined, a random tree is used.]
+	mcmc; [Run MrBayes]
 		
 
 
