@@ -27,7 +27,7 @@ TajDPval<-tajima.test(fastaFile)[[2]]
 
 cat(varfilename,h,SegSites,Div,TajD,TajDPval, sep = "\t")
 
-
-#align_metric<-read.table(file = "PhD/Sequences/CpecFinal/Genome_Pipeline/koala_only/Results_Summary/Alignment_metrics.tsv", header = TRUE, sep = "\t")
+#The below can be used on the final output table if you run the above in a loop
+#align_metric<-read.table(file = "Alignment_metrics.tsv", header = TRUE, sep = "\t")
 #align_metric$PAdjust_BH<-p.adjust(p=align_metric$P.value, method = "BH")
 #align_metric$PAdjust_Bonf<-p.adjust(p=align_metric$P.value, method = "bonferroni")
