@@ -10,8 +10,8 @@ begin mrbayes;
 	
 	[set dir=DIR;]
 	[lset Nucmodel=4by4;]
-	lset Nst=NST; [1,2,6]
-	lset rates=RATES; [Equal/Gamma(+G)/Propinv(+I)/Invgamma(+I+G)/Adgamma]
+	lset Nst=NST; [Replace NST with model value. JC/F81=1; K80/K2P/HKY=2; SYM/GTR=6]
+	lset rates=RATES; [Replace Rates with model string. Equal/Gamma (for +G)/Propinv (for +I)/Invgamma (for +I+G)/Adgamma]
 	lset ngammacat=4;
 
 	[4 rate categories are sufficient. More will increase the accuracy of the likelihood calculations. The time it will take 	to complete the analysis will increase in direct proportion to the number of rate categories you use, and the effects on 	the results will be negligible in most cases.]
@@ -19,7 +19,7 @@ begin mrbayes;
 
 	[We now need to set the priors for our model. There are six types of parameters in the model: the topology, the branch 		lengths, the four stationary frequencies of the nucleotides, the six different nucleotide substitution rates, the 		proportion of invariable sites, and the shape parameter of the gamma distribution of rate variation. The default priors 	in MrBayes work well for most analyses, and we will not change any of them for now. By typing help prset you can obtain 	a list of the default settings for the parameters in your model.]
 
-	prset statefreqpr=STATEFREQPR;	[fixed(equal) if using JC or SYM model, otherwise Dirichlet(1.0,1.0,1.0,1.0)]
+	prset statefreqpr=STATEFREQPR;	[replace with: fixed(equal) for JC/SYM model, otherwise Dirichlet(1.0,1.0,1.0,1.0)]
 	
 	[prset shapepr=exponential(10.0);]
 	[prset statefreqpr=Dirichlet(1,1,1,1);	change to represent known proportion of A,C,G,T for example, to 150,130,90,140]
@@ -29,15 +29,15 @@ begin mrbayes;
 	[prset brlenspr=unconstrained:gammadir(1.0,0.1,1.0,1.0); The Brlenspr parameter can either be set to unconstrained or clock-constrained. For trees without a molecular clock (unconstrained) the branch length prior can be set either to exponential or uniform. The default exponential prior with parameter 10.0 should work well for most analyses. It has an expectation of 1/10 = 0.1 but allows a wide range of branch length values (theoretically from 0 to infinity). Because the likelihood values vary much more rapidly for short branches than for long branches, an exponential prior on branch lengths is closer to being uninformative than a uniform prior.]
 
 
-	mcmcp Ngen=1000000; [set this to 1,000,000 for final]
+	mcmcp Ngen=1000000; [Chain length of 1,000,000]
 	mcmcp Nruns=2;
-	mcmcp Nchains=4;
+	mcmcp Nchains=4; [Use 4 chains per run, 1 cold and 3 heated]
 	mcmcp Temp=0.200000;
 	[mcmcp Reweight=0.00 v 0.00 ^;]
 	mcmcp Swapfreq=1;
 	mcmcp Nswaps=1;
 	mcmcp Samplefreq=1000; 
-	mcmcp Printfreq=10000; 
+	mcmcp Printfreq=10000; [How often the data is printed to the output]
 	mcmcp Printall=No;
 	mcmcp Printmax=8;
 	mcmcp Mcmcdiagn=Yes;
@@ -46,13 +46,13 @@ begin mrbayes;
 	mcmcp Minpartfreq=0.20;
 	mcmcp Allchains=No;
 	mcmcp Allcomps=No;
-	[mcmcp Burnin=0;]
-	mcmcp Relburnin=Yes;
-	mcmcp Burninfrac=0.25;
+	[mcmcp Burnin=0;] [Use this if you want burn in at a set chain length]
+	mcmcp Relburnin=Yes; [Use this if you want burn in to be relative to the chain length]
+	mcmcp Burninfrac=0.25; [Set to proportion of chain length to use as burn in, 25% in this case]
 	mcmcp Stoprule=No; [Set this to "Yes" if you would like iterations to cease when standard deviation reaches Stopval]
 	mcmcp Stopval=0.01;
 	mcmcp Savetrees=No;
-	mcmcp Checkpoint=Yes;
+	mcmcp Checkpoint=Yes; [Useful if running large analysis that may need to be stopped at some point, allows restart]
 	mcmcp Checkfreq=10000; 
 	mcmcp Filename=DIR/FILE; [Replace with output filename]
 	mcmcp Startparams=Current;
@@ -66,8 +66,8 @@ begin mrbayes;
 
 
 	[burnin=number of trees to be ignored. contype is the consesus type. Set to "halfcompat" returns the equivalent of 50% majority rule in PAUP*, "allcompat" returns equivalent to 50% majority rule with 'show frequencies of all observed biparitions' ticked.]
-	sump filename=DIR/FILE Relburnin=Yes Burninfrac=0.25;
-	sumt filename=DIR/FILE contype=halfcompat Relburnin=Yes Burninfrac=0.25;
+	sump filename=DIR/FILE Relburnin=Yes Burninfrac=0.25; [Replace DIR/FILE with output filename] 
+	sumt filename=DIR/FILE contype=halfcompat Relburnin=Yes Burninfrac=0.25; [Replace DIR/FILE with output filename] 
 			[sumt and sump have SEPARATE BURNIN times]
 	
 	log stop;
