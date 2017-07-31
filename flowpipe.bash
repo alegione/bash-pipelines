@@ -43,38 +43,20 @@ walltime () {
 
 
 
-#Determine location and set environmental variables
-if [ -d /home/alistair ]; then
-	LOCATION="laptop"
-else
-	LOCATION="communal"
-fi
-echo "$LOCATION"
 
 
-if [ "$LOCATION" = "laptop" ]; then
-	if [ ! -e "Desktop/Shared_folder/mount_test.txt" ]; then
-		sudo mount -t vboxsf Sequences Desktop/Shared_folder/
-	fi
-	DirReads="Desktop/Shared_folder/CpecFinal/Original_Reads"
-	DirOutput="haptest"
-	DirBWAOutput="$DirOutput/Sorted_BAM"
-	DirFreebayes="$DirOutput/VCF"
-	DirFlow="$DirOutput/FlowFiles"
-	Reference="$DirOutput/E58_complete.fa"
-	BWA="bwa mem"
-	FREEBAYES="freebayes -F 0.05 -p 10"
-elif [ "$LOCATION" = "communal" ]; then
-	Dir="DataDrive/Alistair_Legione/CpecFinal"
-	DirReads="DataDrive/Alistair_Legione/CpecFinal/Original_Reads"
-	DirOutput="HapFlow"
-	DirBWAOutput="$DirOutput/Sorted_BAM"
-	DirFreebayes="$DirOutput/VCF"
-	DirFlow="$DirOutput/FlowFiles"
-	Reference="$DirOutput/E58_complete.fa"
-	BWA="bwa mem"
-	FREEBAYES="freebayes -F 0.05 -p 10"
-fi
+
+
+Dir="XXXX" #Put your project directory here, this will be replaced with a prompt in future
+DirReads="XXXX" #Put your read directory here, this will be replaced with a prompt in future
+DirOutput="HapFlow"
+DirBWAOutput="$DirOutput/Sorted_BAM"
+DirFreebayes="$DirOutput/VCF"
+DirFlow="$DirOutput/FlowFiles"
+Reference="$DirOutput/E58_complete.fa"
+BWA="bwa mem"
+FREEBAYES="freebayes -F 0.05 -p 10"
+
 
 if [ ! -d $DirOutput ]; then
 	mkdir $DirOutput
