@@ -1,16 +1,20 @@
 #!/bin/bash
 # A few lines of code that can be handy to include at the start of any bash script.
-# Mounts shared folders, sets terminal colour variables and maximises window size
+# Sets CPU and RAM variables, terminal colour variables and maximises window size
 
 
-#get CPU metrics
+#!/bin/bash
+
+#get CPU and RAM metrics
 CORES=$(nproc)
+RAM=$(free -g | tr -s "[:space:]" "\t" | cut -f11)
 
-# The below can be adjusted if you have a folder that requires mounting (which is not auto-mounted). Requires a text file
-# 'mount_test.txt' in the target directory
-if [ ! -e Desktop/Shared_folder/mount_test.txt ]; then
-	sudo mount -t vboxsf Sequences Desktop/Shared_folder/
-fi
+#Only useful if you have a shared drive you always want to check is mounted,
+#requires a text file 'mount_test.txt' in the shared folder
+
+#if [ ! -e Desktop/Shared_folder/mount_test.txt ]; then
+#	sudo mount -t vboxsf Sequences Desktop/Shared_folder/
+#fi
 
 #Set colour variables
 RED='\033[1;31m'
@@ -25,4 +29,3 @@ LINE=`xrandr -q | grep Screen`
 WIDTH=`echo ${LINE} | awk '{ print $8 }'`
 HEIGHT=`echo ${LINE} | awk '{ print $10 }' | awk -F"," '{ print $1 }'`
 echo -e "\e[4;$HEIGHT;${WIDTH}t"
-
