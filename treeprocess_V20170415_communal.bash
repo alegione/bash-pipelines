@@ -22,16 +22,13 @@ PROKKA="prokka"
 ROARY="roary"
 MRBAYES="mb"
 ETE="ete3"
-#MODELTEST="java -jar AlPrograms/jmodeltest2/dist/jModelTest.jar"
 MODELTEST="java -jar /home/genomics/jmodeltest2-master/dist/jModelTest.jar"
-#NEWICKCONVERTER="Desktop/Shared_folder/Scripts/R/TreeFromNexus.R"
 NEWICKCONVERTER="/home/genomics/TreeFromNexus.R"
-ALIGNMENTMETRICS="/home/genomics/Shared_folder/Alistair_Legione/R/Alignment_metrics.R"
-#REFERENCETREE="/home/alistair/Snippy-core_noref/Bayes/SNPcore.newick.tre"
-REFERENCETREE="/home/genomics/Shared_folder/Alistair_Legione/CpecFinal/Genome_Pipeline/SNPcore/core.3.bayes.newick.tre"
-GCODE="11"
-GENUS="Chlamydia"
-SPECIES="pecorum"
+ALIGNMENTMETRICS="/home/genomics/Alignment_metrics.R"
+REFERENCETREE="/path/to/reference/tree" # replace with prompt
+GCODE="11"	# replace with prompt
+GENUS="Chlamydia"	#replace with prompt
+SPECIES="pecorum"	#replace with prompt
 
 
 
@@ -52,16 +49,15 @@ SPECIES="pecorum"
 
 # Program input and output directories
 PROJECT=""
-Dir="/home/genomics/Documents/Alistair_Legione/koala_only"
-#Dir="/home/alistair/Genome_Pipeline/koala_only"
-#DirRoary="/home/genomics/Documents/Alistair_Legione/roary_80p_newProkka"
-#DirProkka="/home/genomics/Documents/Alistair_Legione/NewProkka_Annotated_noref"
+Dir="Target directory" #replace with prompt
 DirProkka="$Dir/Prokka_annotated"
-DirRoary="$Dir/roary_koalas"
-DirFasta="Desktop/Shared_folder/CpecFinal/GenomesFasta"
+DirRoary="$Dir/roary_output"
+DirFasta="GenomesFasta"
 DirResults="$Dir/Results_Summary"
 DirMetadata="$Dir/Metadata"
 
+
+# copied from 'assemble.bash' needs to be updates with proper parameters
 #if [ -e "$1/Metadata/Parameters.txt" ]; then
 #	echo -e "${BLUE}Parameter file detected...obtaining previously entered options${NOCOLOUR}"
 #	ParFile="$1/Metadata/Parameters.txt"
@@ -128,10 +124,6 @@ fi
 if [ ! -d $DirProkka/txt ]; then
 	mkdir $DirProkka/txt
 fi
-
-#NewProkka=$(printf $(which prokka | sed 's/prokka//g')"Alprokka")
-#sed 's/my $MAXCONTIGIDLEN = 20;  # Genbank rule/my $MAXCONTIGIDLEN = 200;  # altered by ALscript from: my $MAXCONTIGIDLEN = 20;  # Genbank rule/g' $(which prokka) | sed 's/contig%06d/contig%04d/g' > #$NewProkka
-#chmod 777 $NewProkka
 
 # Get list of genomes to annotate
 if [ ! -e $DirMetadata/GenomeList.txt ]; then
@@ -323,12 +315,6 @@ files${NOCOLOUR}"
 	count=$((count+1))
 done < $DirMetadata/CoreGeneList.txt
 
-#perhaps run all samples through then tally the most common result and just use that for all genes?
-
-
-
-
-
 #take roary output and convert it to a mr bayes file, using best model approach
 #if [ -d $Dir/Bayes ]; then
 #	mkdir $Dir/Bayes
@@ -405,21 +391,6 @@ while read i; do
 	count=$((count+1))
 done < $DirMetadata/CoreGeneList.txt
 
-
-
-#take the bayes tree and convert it to newick format
-### To convert to Newick format
-## Made a tree conversion program in R, saved this as convert_tree.R
-## install.packages("ape")
-## library(ape)
-## tree <- read.nexus(file="in.tre")
-## write.tree(tree,file="temp.R.tre")
-## Loop through the Mr Bayes output trees and save with a new name. For this to work, you just have to make sure your trees end in ".nexus.mb.con.tre".
-
-
-
-
-#/usr/local/bin/ete3 compare -t $words -r /home/alistair/Snippy-core_noref/Bayes/SNPcore.newick.tre --unrooted --taboutput
 if [ ! -e $DirMetadata/TreeList.txt ]; then
 	basename -a $Dir/BayesTrees/*.tre > $DirMetadata/TreeList.txt
 fi
@@ -434,7 +405,7 @@ echo "$words" > $DirMetadata/CommaTreeList.txt
 sed -i 's/\,[^,]*$//g' $DirMetadata/CommaTreeList.txt
 
 
-#run the trees through ete3 and compare with snp tree?
+#run the trees through ete3 and compare with reference tree?
 if [ ! -e $DirResults/treecompare.tsv ]; then
 	echo -e "source\tref\tE.size\tnRF\tRF\tmaxRF\tsrc-branches\tref-branches\tsubtrees\ttreekoD" > $DirResults/treecompare.tsv
 fi
@@ -448,14 +419,6 @@ while read i; do
 	fi
 	count=$((count+1))
 done < $DirMetadata/CoreGeneList.txt
-
-
-
-
-
-
-
-
 
 
 #run the trees through codeml with the alignment file
@@ -476,7 +439,6 @@ fi
 if [ ! -d $Dir/paml/output ]; then
 	mkdir $Dir/paml/output
 fi
-
 
 
 count="1"
