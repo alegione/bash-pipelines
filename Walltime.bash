@@ -1,7 +1,10 @@
-#A function to include in bash scripts to detail walltime for loops
-#Get start time
+# A function to include in bash scripts to detail walltime for loops
+
+
+# Get start time
 SCRIPTSTART=`date +%s`
 
+# Calling function requires a start time variable (eg walltime $STARTTIME), which is read via the $1 variable
 walltime () {
 	RED='\033[1;31m'
 	GREEN='\033[1;32m'
