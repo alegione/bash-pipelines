@@ -30,21 +30,17 @@ bwa="bwa"
 trimmomatic="trimmomatic"
 srst2="srst2"
 #srst2="srst2.py"
-#coverageTableR="/home/genomics/Documents/Alistair_Legione/CoverageTable.R"
-#coveragePlotsR="/home/genomics/Documents/Alistair_Legione/CoveragePlots.R"
-#coverageTableR="Rscripts/CoverageTable.R"
-#coveragePlotsR="Rscripts/CoveragePlots.R"
 coverageTableR="bin/CoverageTable.R"
 coveragePlotsR="bin/CoveragePlots.R"
 
 
-
-	#getmlst="/home/genomics/Shared_folder/Alistair_Legione/Algetmlst.py"
+#Requires my fork of getmlst.py that produces an output folder containing all downloaded data
+#getmlst="/home/genomics/Shared_folder/Alistair_Legione/Algetmlst.py"
 getmlst="Algetmlst.py"
 
 
 #ask user the name of the project for file name/directory purposes
-#set this path to the target directory you want all files kept, from multiple pipeline runs. Be careful not to put a / at the end
+#set this path to the target directory you want all files kept, from multiple pipeline runs.Be careful not to put a / at the end
 
 if [ -e "$1/Metadata/Parameters.txt" ]; then
 	echo -e "${BLUE}Parameter file detected...obtaining previously entered options${NOCOLOUR}"
@@ -143,8 +139,7 @@ MLSTout="$Dir/MLST_output"
 ResultsSum="$Dir/Results_Summary"
 #file location for trimmomatic adapters
 	AdapterLocation="/home/genomics/.linuxbrew/Cellar/trimmomatic/0.36/share/trimmomatic/adapters"
-	#AdapterLocation="/home/qiime/Programfolders/Trimmomatic-0.36/adapters"
-#file location for SRST2 MLST databases
+	#file location for SRST2 MLST databases
 	SRST2MLST="/home/genomics/MLST_databases"
 	#SRST2MLST="/home/qiime/MLST_databases"
 #file location for SRST2 gene databases
