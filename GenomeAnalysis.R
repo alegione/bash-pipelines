@@ -15,25 +15,14 @@ args = commandArgs(trailingOnly=TRUE)
 #}
 
 varSWD<-args[1]	#working directory for depth files
-#setwd("PhD/Sequences/CpecHope/")
 setwd(varSWD)
-#getwd()
 CoverageTable<-read.table(file = "coverage/CoverageTable.txt", header = TRUE)
 #View(CoverageTable)
 
-#varFasta<-args[2]
 
-#varFasta <- read.fasta(file = "PhD/Sequences/Cpec_whole_genome/03RayIs_3F3_B_UGT.fasta")
-#varFasta
-#varFastaseq <- varFasta[[1]]  # Put the sequence in a vector.
-#varFastaseq
-#varGC<-round(GC(varFastaseq)*100,2)
-#varGC<-00
 #if function here to get see if a table exists?
-#varDataOld<-data.frame(Length=numeric(),'Percentage Coverage'=numeric(),'PercentCoverage where depth above 10'=numeric(),'GC'=numeric(),'Average Depth'=numeric(),'Median Depth'=numeric())
 
 varfilename<-args[2]	#depth file in .txt format
-#varfilename<-"19238_1_02"
 varDepthFile<-paste0("coverage/",varfilename,".depth.txt")
 
 dat <- read.table(varDepthFile)
@@ -73,8 +62,6 @@ varTIFFname<-paste0("coverage/",varfilename,".tiff") #concatentates a string, he
 
 
 #pdf(varPDFname, width = 600, height = 600, useDingbats = FALSE)
-
-
 
 if(!file.exists(varTIFFname)) {
   options(scipen = 10)
