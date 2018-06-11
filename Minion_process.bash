@@ -125,9 +125,39 @@ DIR_calledreads="$Dir/Called_reads"
 DIR_TrimmedReads="$Dir/PoreChop"
 DIR_FilteredReads="$Dir/FiltLong"
 DIR_ResultsSum="$Dir/Results_Summary"
+DIR_canu="$Dir/canu"
 Minion_Kit="SQK-DCS108"
 Minion_Flow="FLO-MIN106"
 WorkerThreads="16"
+
+Switch=0
+if [ $Minion_Flow == "nil" ]; then
+	while [ "$Switch" -eq "0" ]; do
+		echo -e "${BLUE}Please enter the number corresponding to the flow cell in use:${NOCOLOUR}"
+		echo -e "${YELLOW}1 - FLO-MIN106 (R9.4)${NOCOLOUR}"
+		echo -e "${YELLOW}2 - FLO-MIN107 (R9.5)${NOCOLOUR}"
+		read -e Minion_Flow
+		case $Minion_Flow in
+			1)
+				echo -e "${GREEN}Flow cell FLO-MIN106 selected${NOCOLOUR}"
+				Minion_Flow="FLO-MIN106"
+				Switch=1
+				;;
+			2)
+				echo -e "${GREEN}Flow cell FLO-MIN107 selected${NOCOLOUR}"
+				Minion_Flow="FLO-MIN107"
+				Switch=1
+				;;
+			*)
+				echo -e "${RED}ERROR: Please only type 1 or 2${NOCOLOUR}"
+				;;
+		esac
+	done
+fi
+if ! grep -i -q "Flow cell" $ParFile; then echo -e "Flow cell	$Minion_Flow" >> $ParFile; fi
+
+# ADD IN KIT SELECTION CASES
+
 
 if [ $DIR_RawReads == "nil" ]; then
 	Switch=0
@@ -137,12 +167,14 @@ if [ $DIR_RawReads == "nil" ]; then
 		if [ -d $DIR_RawReads ]; then
 			Switch=1
 			echo -e "${BLUE}You entered: ${GREEN}$DIR_RawReads${NOCOLOUR}"
-			echo -e "Original reads	$DIR_RawReads" >> $ParFile
 		else
 			echo -e "${RED}Directory does not exist: ${GREEN}$DIR_RawReads${NOCOLOUR}"
 		fi
 	done
 fi
+
+if ! grep -i -q "Original reads" $ParFile; then echo -e "Original reads	$DIR_RawReads" >> $ParFile; fi
+
 
 if [ ! -d $DIR_calledreads ]; then
 	mkdir $DIR_calledreads
@@ -157,10 +189,10 @@ if [ ! -d $DIR_calledreads/workspace ]; then
 	read_fast5_basecaller.py -i $DIR_RawReads -s $DIR_calledreads -r -t $WorkerThreads -f $Minion_Flow -k $Minion_Kit -o fastq --disable_filtering
 fi
 
-if [ ! -e "$Results_Summary/Stats-01-Called_reads.txt" ];
-echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-echo -e "${BLUE}Running NanoStat on called reads${NOCOLOUR}" | tee -a $Progress
-	NanoStat --fastq "$DIR_calledreads/workspace/"* --readtype 1D -t WorkerThreads -n $Results_Summary/Stats-01-Called_reads.txt
+if [ ! -e "$Results_Summary/Stats-01-Called_reads.txt" ]; then
+	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+	echo -e "${BLUE}Running NanoStat on called reads${NOCOLOUR}" | tee -a $Progress
+	NanoStat --fastq "$DIR_calledreads/workspace/"* --readtype 1D -t $WorkerThreads -n "$Results_Summary/Stats-01-Called_reads.txt"
 fi
 
 if [ ! -d $DIR_TrimmedReads ]; then
@@ -175,20 +207,40 @@ if [ ! -d $DIR_TrimmedReads ]; then
 	fi
 fi
 
-if [ ! -e "$Results_Summary/Stats-02-PoreChop_reads.txt" ];
-echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
-	NanoStat --fastq "$DIR_TrimmedReads/"* --readtype 1D -t WorkerThreads -n $Results_Summary/Stats-02-PoreChop_reads.txt
+	basename -a "$DIR_TrimmedReads" > "$Meta/ReadFileNames.txt"
+
+if [ ! -e "$Results_Summary/Stats-02-PoreChop_reads.txt" ]; then
+	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
+	while read i; do
+		echo -e $i >> "$Results_Summary/Stats-02-PoreChop_reads.txt"
+		NanoStat --fastq "$DIR_TrimmedReads/$i" --readtype 1D -t $WorkerThreads >> "$Results_Summary/Stats-02-PoreChop_reads.txt"
+	done < "$Meta/ReadFileNames.txt"
 fi
 
 if [ ! -d $DIR_FilteredReads ]; then
 	mkdir $DIR_FilteredReads
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Running FiltLong on called reads to remove low quality reads${NOCOLOUR}" | tee -a $Progress
-	basename -a "$DIR_TrimmedReads" > "$DIR_FilteredReads/tmp.txt"
 	while read i; do
 		filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 "$DIR_TrimmedReads/$i" > "$DIR_FilteredReads/$i"
-	done < "$DIR_FilteredReads/tmp.txt"
+	done < "$Meta/ReadFileNames.txt"
 fi
 
-#CANU
+if [ ! -e "$Results_Summary/Stats-03-FiltLong_reads.txt" ]; then
+	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
+	while read i; do
+		echo -e $i >> "$Results_Summary/Stats-03-FiltLong_reads.txt"
+		NanoStat --fastq "$DIR_FilteredReads/$i" --readtype 1D -t $WorkerThreads >> "$Results_Summary/Stats-03-FiltLong_reads.txt"
+	done < "$Meta/ReadFileNames.txt"
+fi
+
+if [ ! -d $DIR_canu ]; then
+	mkdir $DIR_canu
+fi
+while read i; do
+	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+	echo -e "${BLUE}Running canu on filtered $i${NOCOLOUR}" | tee -a $Progress
+	canu -d $DIR_canu.$Project -p $i genomeSize=500k -nanopore-raw "$DIR_FilteredReads/$i"
+done < "$Meta/ReadFileNames.txt"
