@@ -11,7 +11,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[1;34m'
 PURPLE='\033[1;35m'
 NOCOLOUR='\033[0m'
-#USE THIS TO STRIP COLOUR FROM FILES: sed 's/\x1b\[[0-9;]*m//g'
+
 
 #get screen size and maximise
 LINE=`xrandr -q | grep Screen`
@@ -27,15 +27,16 @@ if [ -e "$1/Metadata/Parameters.txt" ]; then
 	ParFile="$1/Metadata/Parameters.txt"
 	Meta="$1/Metadata"
 
-	if grep -i -q "User" $ParFile; then HomeDir=$(grep -i "User" $ParFile | cut -f2); echo -e "${GREEN}User: $HomeDir${NOCOLOUR}";else HomeDir="nil"; fi
-	if grep -i -q "Project" $ParFile; then Project=$(grep -i "Project" $ParFile | cut -f2); echo -e "${GREEN}Project directory: $Project${NOCOLOUR}";else Project="nil"; fi
-	if grep -i -q "Original reads" $ParFile; then DIR_RawReads=$(grep -i "Original reads" $ParFile | cut -f2); echo -e "${GREEN}Raw reads directory: $DIR_RawReads${NOCOLOUR}";else DIR_RawReads="nil";fi
-	if grep -i -q "Called reads" $ParFile; then DIR_calledreads=$(grep -i "Called reads" $ParFile | cut -f2); echo -e "${GREEN}Called reads directory: $DIR_calledreads${NOCOLOUR}";else DIR_calledreads="nil";fi
+	if grep -i -q "User" $ParFile; then HomeDir=$(grep -i "User" $ParFile | cut -f2); echo -e "${GREEN}User:\t$HomeDir${NOCOLOUR}";else HomeDir="nil"; fi
+	if grep -i -q "Project" $ParFile; then Project=$(grep -i "Project" $ParFile | cut -f2); echo -e "${GREEN}Project directory:\t$Project${NOCOLOUR}";else Project="nil"; fi
+	if grep -i -q "Original reads" $ParFile; then DIR_RawReads=$(grep -i "Original reads" $ParFile | cut -f2); echo -e "${GREEN}Raw reads directory:\t$DIR_RawReads${NOCOLOUR}";else DIR_RawReads="nil";fi
+	if grep -i -q "Called reads" $ParFile; then DIR_calledreads=$(grep -i "Called reads" $ParFile | cut -f2); echo -e "${GREEN}Called reads directory:\t$DIR_calledreads${NOCOLOUR}";else DIR_calledreads="nil";fi
 
-	if grep -i -q "Flow cell" $ParFile; then Minion_Flow=$(grep -i "Flow cell" $ParFile | cut -f2); echo -e "${GREEN}Flow cell: $Minion_Flow${NOCOLOUR}";else Minion_Flow="nil";fi
-	if grep -i -q "Kit" $ParFile; then Minion_Kit=$(grep -i "Kit" $ParFile | cut -f2); echo -e "${GREEN}Kit used: $Minion_Kit${NOCOLOUR}";else Minion_Kit="nil";fi
-	if grep -i -q "Direction" $ParFile; then Direction=$(grep -i "Direction" $ParFile | cut -f2); echo -e "${GREEN}Direction: $Direction${NOCOLOUR}";else Direction="nil";fi
-	if grep -i -q "Product" $ParFile; then Product=$(grep -i "Product" $ParFile | cut -f2); echo -e "${GREEN}Product: $Product${NOCOLOUR}";else Product="nil";fi
+	if grep -i -q "Flow cell" $ParFile; then Minion_Flow=$(grep -i "Flow cell" $ParFile | cut -f2); echo -e "${GREEN}Flow cell:\t$Minion_Flow${NOCOLOUR}";else Minion_Flow="nil";fi
+	if grep -i -q "Kit" $ParFile; then Minion_Kit=$(grep -i "Kit" $ParFile | cut -f2); echo -e "${GREEN}Kit:\t$Minion_Kit${NOCOLOUR}";else Minion_Kit="nil";fi
+  if grep -i -q "Barcoded" $ParFile; then Barcoded=$(grep -i "Barcoded" $ParFile | cut -f2); echo -e "${GREEN}Barcoded:\t$Barcoded${NOCOLOUR}";else Barcoded="nil";fi
+	if grep -i -q "Direction" $ParFile; then Direction=$(grep -i "Direction" $ParFile | cut -f2); echo -e "${GREEN}Direction:\t$Direction${NOCOLOUR}";else Direction="nil";fi
+	if grep -i -q "Product" $ParFile; then Product=$(grep -i "Product" $ParFile | cut -f2); echo -e "${GREEN}Product:\t$Product${NOCOLOUR}";else Product="nil";fi
 
 #	if grep -i -q "Sample names" $ParFile; then Species=$(grep -i "Sample names" $ParFile | cut -f2);echo -e "${GREEN}Sample prefix: $Species${NOCOLOUR}";else Species="nil";fi
 #	if grep -i -q "Diversity profile target" $ParFile; then divprotarget=$(grep -i "Diversity profile target" $ParFile | cut -f2);echo -e "${GREEN}Diversity profile target: $divprotarget${NOCOLOUR}";else divprotarget="nil";fi
@@ -59,6 +60,7 @@ else
 	DIR_calledreads="nil"
 	Minion_Flow="nil"
 	Minion_Kit="nil"
+  Barcoded="nil"
 #	Species="nil"
 #	divprotarget="nil"
 #	Adapters="nil"
@@ -187,77 +189,77 @@ if [ $Minion_Kit == "nil" ]; then
 		read -e Minion_Kit
 		case $Minion_Kit in
 			1)
-				echo -e "${GREEN}Selected Ligation sequencing kit 1D${GREEN}\tSQK-LSK108${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected Ligation sequencing kit 1D\tSQK-LSK108${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-LSK108"
 				Direction="1D"
 				Product="DNA"
-				Switch=1
+        Switch=1
 			;;
 			2)
-				echo -e "${GREEN}Selected Ligation sequencing kit${GREEN}\tSQK-LSK109${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected Ligation sequencing kit\tSQK-LSK109${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-LSK109"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			3)
-				echo -e "${GREEN}Selected Rapid sequencing kit${GREEN}\tSQK-RAD004${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected Rapid sequencing kit\tSQK-RAD004${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-RAD004"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			4)
-				echo -e "${GREEN}Selected PCR sequencing kit${GREEN}\tSQK-PSK004${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected PCR sequencing kit\tSQK-PSK004${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-PSK004"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			5)
-				echo -e "${GREEN}Selected 1D^2 sequencing kit${GREEN}\tSQK-LSK308${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected 1D^2 sequencing kit\tSQK-LSK308${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-LSK308"
 				Direction="1D2"
 				Product="DNA"
 				Switch=1
 			;;
 			6)
-				echo -e "${GREEN}Selected PCR Barcoding kit${GREEN}\tSQK-PBK004${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected PCR Barcoding kit\tSQK-PBK004${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-PBK004"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			7)
-				echo -e "${GREEN}Selected Rapid PCR Barcoding kit${GREEN}\tSQK-RPB004${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected Rapid PCR Barcoding kit\tSQK-RPB004${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-RPB004"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			8)
-				echo -e "${GREEN}Selected 16S Barcoding kit${GREEN}\tSQK-RAB204${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected 16S Barcoding kit\tSQK-RAB204${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-RAB204"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			9)
-				echo -e "${GREEN}Selected Direct cDNA sequencing kit${GREEN}\tSQK-DCS108${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected Direct cDNA sequencing kit\tSQK-DCS108${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-DCS108"
 				Direction="1D"
 				Product="DNA"
 				Switch=1
 			;;
 			10)
-				echo -e "${GREEN}Selected Direct RNA sequencing kit${GREEN}\tSQK-RNA001${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected Direct RNA sequencing kit\tSQK-RNA001${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-RNA001"
 				Direction="1D"
 				Product="RNA"
 				Switch=1
 			;;
 			11)
-				echo -e "${GREEN}Selected cDNA-PCR Sequencing Kit${GREEN}\tSQK-PCS108${NOCOLOUR}" | tee -a $Progress
+				echo -e "${GREEN}Selected cDNA-PCR Sequencing Kit\tSQK-PCS108${NOCOLOUR}" | tee -a $Progress
 				Minion_Kit="SQK-PCS108"
 				Direction="1D"
 				Product="DNA"
@@ -269,9 +271,27 @@ if [ $Minion_Kit == "nil" ]; then
 		esac
 	done
 fi
-if ! grep -i -q "Kit" $ParFile; then echo -e "Kit	$Minion_Kit" >> $ParFile; fi
-if ! grep -i -q "Direction" $ParFile; then echo -e "Direction	$Minion_Kit" >> $ParFile; fi
-if ! grep -i -q "Product" $ParFile; then echo -e "Product	$Minion_Kit" >> $ParFile; fi
+
+if [ $Barcoded == "nil" ]; then
+  echo -e "${GREEN}Did you include barcoding (Yes/No)${NOCOLOUR}"
+  read -N 1 yesno
+  yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
+  if [ $yesno = "y" ]; then
+    Barcoded="TRUE"
+    echo -e "${BLUE}\nReads will be binned by barcode in PoreChop${NOCOLOUR}" | tee -a $Progress
+  else
+    Barcoded="FALSE"
+    echo -e "${BLUE}\nReads will NOT be binned by barcode in PoreChop${NOCOLOUR}" | tee -a $Progress
+  fi
+fi
+
+if ! grep -i -q "Kit" $ParFile; then echo -e "Kit\t$Minion_Kit" >> $ParFile; fi
+if ! grep -i -q "Direction" $ParFile; then echo -e "Direction\t$Direction" >> $ParFile; fi
+if ! grep -i -q "Product" $ParFile; then echo -e "Product\t$Product" >> $ParFile; fi
+if ! grep -i -q "Barcoded" $ParFile; then echo -e "Barcoded\t$Barcoded" >> $ParFile; fi
+
+
+
 
 if [ $DIR_RawReads == "nil" ]; then
 	Switch=0
@@ -287,7 +307,18 @@ if [ $DIR_RawReads == "nil" ]; then
 	done
 fi
 
-if ! grep -i -q "Original reads" $ParFile; then echo -e "Original reads	$DIR_RawReads" >> $ParFile; fi
+if ! grep -i -q "Original reads" $ParFile; then echo -e "Original reads\t$DIR_RawReads" >> $ParFile; fi
+
+
+
+#### SLEEP FOR HOW LONG BEFORE STARTING??
+
+echo -e "${BLUE}How long to sleep for before starting (eg. for 2 hours type: 2h): ${NOCOLOUR}"
+read sleeptime
+
+sleep "$sleeptime"
+
+
 
 
 if [ ! -d $DIR_calledreads ]; then
@@ -301,6 +332,7 @@ if [ ! -d $DIR_calledreads/workspace ]; then
 	echo -e "${BLUE}Minion kit:${GREEN} $Minion_Kit${NOCOLOUR}"
 	echo -e "${BLUE}Worker threads:${GREEN} $WorkerThreads${NOCOLOUR}"
 	read_fast5_basecaller.py -v | tee -a $Progress
+  echo $DIR_RawReads
 	read_fast5_basecaller.py -i $DIR_RawReads -s $DIR_calledreads -r -t $WorkerThreads -f $Minion_Flow -k $Minion_Kit -o fastq --disable_filtering
 fi
 
@@ -325,15 +357,15 @@ if [ ! -d $DIR_TrimmedReads ]; then
 	fi
 fi
 
-	basename -a $DIR_TrimmedReads/* > "$Meta/ReadFileNames.txt"
+	basename -a -s ".fastq" $DIR_TrimmedReads/* > "$Meta/ReadFileNames.txt"
 
 if [ ! -e "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt" ]; then
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
 	NanoStat --version | tee -a $Progress
 	while read i; do
-		echo -e $i >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
-		NanoStat --fastq "$DIR_TrimmedReads/$i" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+		echo -e "$i.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+		NanoStat --fastq "$DIR_TrimmedReads/$i.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
 	done < "$Meta/ReadFileNames.txt"
 fi
 
@@ -344,18 +376,18 @@ if [ ! -d $DIR_FilteredReads ]; then
 	filtlong --version | tee -a $Progress
 	while read i; do
 		echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-		echo -e "${GREEN}$i${NOCOLOUR}" | tee -a $Progress
-		filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 "$DIR_TrimmedReads/$i" > "$DIR_FilteredReads/$i"
+		echo -e "${GREEN}Filtering $i.fastq and saving as $i.filtered.fastq${NOCOLOUR}" | tee -a $Progress
+		filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 "$DIR_TrimmedReads/$i.fastq" > "$DIR_FilteredReads/$i.filtered.fastq"
 	done < "$Meta/ReadFileNames.txt"
 fi
 
 if [ ! -e "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt" ]; then
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
+	echo -e "${BLUE}Running NanoStat on filtered reads${NOCOLOUR}" | tee -a $Progress
 	NanoStat --version | tee -a $Progress
 	while read i; do
-		echo -e $i >> "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt"
-		NanoStat --fastq "$DIR_FilteredReads/$i" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt"
+		echo -e "$i.filtered.fastq" >> "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt"
+		NanoStat --fastq "$DIR_FilteredReads/$i.filtered.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt"
 	done < "$Meta/ReadFileNames.txt"
 fi
 
@@ -363,8 +395,13 @@ if [ ! -d $DIR_canu ]; then
 	mkdir $DIR_canu
 fi
 while read i; do
-	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-	echo -e "${BLUE}Running canu on filtered $i${NOCOLOUR}" | tee -a $Progress
-	canu --version | tee -a $Progress
-	canu -d $DIR_canu.$Project -p $i genomeSize=500k -nanopore-raw "$DIR_FilteredReads/$i"
+  if [ ! -e "$DIR_canu/$i/$i.contigs.fasta" ]; then
+  	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+  	echo -e "${BLUE}Running canu on filtered $i.fastq${NOCOLOUR}" | tee -a $Progress
+  	canu --version | tee -a $Progress
+  	canu -d $DIR_canu/$i -p $i genomeSize=10k -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+  fi
 done < "$Meta/ReadFileNames.txt"
+
+
+sed -i 's/\x1b\[[0-9;]*m//g' $Progress
