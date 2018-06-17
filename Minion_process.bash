@@ -37,21 +37,6 @@ if [ -e "$1/Metadata/Parameters.txt" ]; then
   if grep -i -q "Barcoded" $ParFile; then Barcoded=$(grep -i "Barcoded" $ParFile | cut -f2); echo -e "${GREEN}Barcoded:\t$Barcoded${NOCOLOUR}";else Barcoded="nil";fi
 	if grep -i -q "Direction" $ParFile; then Direction=$(grep -i "Direction" $ParFile | cut -f2); echo -e "${GREEN}Direction:\t$Direction${NOCOLOUR}";else Direction="nil";fi
 	if grep -i -q "Product" $ParFile; then Product=$(grep -i "Product" $ParFile | cut -f2); echo -e "${GREEN}Product:\t$Product${NOCOLOUR}";else Product="nil";fi
-
-#	if grep -i -q "Sample names" $ParFile; then Species=$(grep -i "Sample names" $ParFile | cut -f2);echo -e "${GREEN}Sample prefix: $Species${NOCOLOUR}";else Species="nil";fi
-#	if grep -i -q "Diversity profile target" $ParFile; then divprotarget=$(grep -i "Diversity profile target" $ParFile | cut -f2);echo -e "${GREEN}Diversity profile target: $divprotarget${NOCOLOUR}";else divprotarget="nil";fi
-#	if grep -i -q "Adapters" $ParFile; then Adapter=$(grep -i "Adapters" $ParFile | cut -f2); echo -e "${GREEN}Adapters to trim: $Adapter${NOCOLOUR}";else Adapters="nil";fi
-#	if grep -i -q "Taxonomy database" $ParFile; then taxa=$(grep -i "Taxonomy database" $ParFile | cut -f2); echo -e "${GREEN}Taxonomy database: $taxa${NOCOLOUR}";else taxa="nil";fi
-#	if grep -i -q "Rarefraction Low" $ParFile; then taxa=$(grep -i "Rarefraction Low" $ParFile | cut -f2); echo -e "${GREEN}Rarefraction Low: $rarefractionlow${NOCOLOUR}";else rarefractionlow="nil";fi
-#	if grep -i -q "Rarefraction High" $ParFile; then taxa=$(grep -i "Rarefraction High" $ParFile | cut -f2); echo -e "${GREEN}Rarefraction High: $rarefractionhigh${NOCOLOUR}";else rarefractionhigh="nil";fi
-#	if grep -i -q "Iterations" $ParFile; then iterations=$(grep -i "Iterations" $ParFile | cut -f2); echo -e "${GREEN}Iterations: $iterations${NOCOLOUR}";else iterations="nil";fi
-#	if grep -i -q "Depth" $ParFile; then Depth=$(grep -i "Depth" $ParFile | cut -f2); echo -e "${GREEN}Subsampling depth: $Depth${NOCOLOUR}"; else Depth="nil";fi
-#	if grep -i -q "Keep Singletons? (Y/N=1/0)" $ParFile; then singles=$(grep -i "Keep Singletons? (Y/N=1/0)" $ParFile | cut -f2); echo -e "${GREEN}Keep Singletons? (Y/N=1/0): $singles${NOCOLOUR}"; else singles="nil";fi
-#	if grep -i -q "Minimum length for clustering" $ParFile; then Truncate=$(grep -i "Minimum length for clustering" $ParFile | cut -f2); echo -e "${GREEN}Minimum length for clustering: $Depth${NOCOLOUR}"; else Truncate="nil";fi
-# forward primer
-# reverse primer (could also be in mapping file)
-# diversity profiling target (ITS or 16S)
-
 	sleep 1
 else
 	HomeDir="nil"
@@ -61,16 +46,6 @@ else
 	Minion_Flow="nil"
 	Minion_Kit="nil"
   Barcoded="nil"
-#	Species="nil"
-#	divprotarget="nil"
-#	Adapters="nil"
-#	taxa="nil"
-#	rarefractionlow="nil"
-#	rarefractionhigh="nil"
-#	iterations="nil"
-#	Depth="nil"
-#	singles="nil"
-#	Truncate="nil"
 fi
 
 if [ "$HomeDir" == "nil" ]; then
@@ -128,15 +103,12 @@ if ! grep -i -q "User" $ParFile; then echo -e "User	$HomeDir" >> $ParFile; fi
 if ! grep -i -q "Project" $ParFile; then echo -e "Project	$Project" >> $ParFile; fi
 
 #File variables
-
-#DIR_RawReads="$Dir/Original_reads"
 DIR_calledreads="$Dir/Called_reads"
 DIR_TrimmedReads="$Dir/PoreChop"
 DIR_FilteredReads="$Dir/FiltLong"
 DIR_ResultsSum="$Dir/Results_Summary"
 DIR_canu="$Dir/canu"
-#Minion_Kit="SQK-DCS108"
-WorkerThreads="16"
+WorkerThreads="$CORES"
 
 if [ ! -d $DIR_ResultsSum ]; then
 	mkdir $DIR_ResultsSum
@@ -291,8 +263,6 @@ if ! grep -i -q "Product" $ParFile; then echo -e "Product\t$Product" >> $ParFile
 if ! grep -i -q "Barcoded" $ParFile; then echo -e "Barcoded\t$Barcoded" >> $ParFile; fi
 
 
-
-
 if [ $DIR_RawReads == "nil" ]; then
 	Switch=0
 	while [ "$Switch" -eq "0" ]; do
@@ -309,7 +279,35 @@ fi
 
 if ! grep -i -q "Original reads" $ParFile; then echo -e "Original reads\t$DIR_RawReads" >> $ParFile; fi
 
-
+if [ "$RefGenome" == "nil" ]; then
+	#Asks for path a reference genome
+	Switch=0
+	while [ "$Switch" -eq "0" ]; do
+		echo -e "${BLUE}Would you like to use a reference genome in downstream analysis (Y/N)?${NOCOLOUR}"
+		read -N 1 yesno
+		echo "" #adds a new line
+		yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
+		if [ "$yesno" == "y" ]; then
+			echo -e "${BLUE}Please enter the file location of your reference genome (in fasta format):${NOCOLOUR}"
+			read -e RefGenome
+			if [ -e $RefGenome ]; then
+				Switch=1
+				echo -e "${BLUE}You entered: ${GREEN}$RefGenome${NOCOLOUR}"
+				echo -e "Reference genome	$RefGenome" >> $ParFile
+#				if [ ! -e "$RefGenome.bwt" ]; then
+#					echo -e "${BLUE}Building bwa index from reference genome:${GREEN} $RefGenome ${NOCOLOUR}"
+#					bwa index $RefGenome
+#				fi
+			else
+				echo -e "${RED}File does not exist: ${GREEN}$RefGenome${NOCOLOUR}"
+			fi
+		else
+			Switch=1
+			RefGenome="None"
+			echo -e "Reference genome	$RefGenome" >> $ParFile
+		fi
+	done
+fi
 
 #### SLEEP FOR HOW LONG BEFORE STARTING??
 
@@ -319,6 +317,8 @@ read sleeptime
 sleep "$sleeptime"
 
 
+
+# START WORKFLOW HERE
 
 
 if [ ! -d $DIR_calledreads ]; then
@@ -357,8 +357,10 @@ if [ ! -d $DIR_TrimmedReads ]; then
 	fi
 fi
 
+# COLLECT NAMES OF FILES FROM PORECHOP OUTPUT
 	basename -a -s ".fastq" $DIR_TrimmedReads/* > "$Meta/ReadFileNames.txt"
 
+# PRODUCE STATS FOR EACH PORECHOP RESULT
 if [ ! -e "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt" ]; then
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
@@ -369,6 +371,7 @@ if [ ! -e "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt" ]; then
 	done < "$Meta/ReadFileNames.txt"
 fi
 
+# FILTER READS WITH FILTLONG
 if [ ! -d $DIR_FilteredReads ]; then
 	mkdir $DIR_FilteredReads
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
@@ -381,6 +384,7 @@ if [ ! -d $DIR_FilteredReads ]; then
 	done < "$Meta/ReadFileNames.txt"
 fi
 
+# PRODUCE STATS FOR EACH FILTLONG RESULT
 if [ ! -e "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt" ]; then
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Running NanoStat on filtered reads${NOCOLOUR}" | tee -a $Progress
@@ -391,9 +395,12 @@ if [ ! -e "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt" ]; then
 	done < "$Meta/ReadFileNames.txt"
 fi
 
+# MAKE THE DIRECTORY FOR EACH ASSEMBLY
 if [ ! -d $DIR_canu ]; then
 	mkdir $DIR_canu
 fi
+
+# ASSEMBLE EACH FILE IN CANU, NEED TO UPDATE genomeSize BASED ON REFERENCE, OR ASK AT THE SAME INITIAL PROMPT, THIS WON'T WORK FOR MULTIPLE GENOMES OR REFERENCES THOUGH
 while read i; do
   if [ ! -e "$DIR_canu/$i/$i.contigs.fasta" ]; then
   	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
@@ -403,5 +410,5 @@ while read i; do
   fi
 done < "$Meta/ReadFileNames.txt"
 
-
+# CLEAN UP PROGRESS TEXT FILE TO REMOVE SPECIAL CHARACTERS THAT DENOTE COLOUR
 sed -i 's/\x1b\[[0-9;]*m//g' $Progress
