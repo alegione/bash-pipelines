@@ -37,6 +37,9 @@ if [ -e "$1/Metadata/Parameters.txt" ]; then
   if grep -i -q "Barcoded" $ParFile; then Barcoded=$(grep -i "Barcoded" $ParFile | cut -f2); echo -e "${GREEN}Barcoded:\t$Barcoded${NOCOLOUR}";else Barcoded="nil";fi
 	if grep -i -q "Direction" $ParFile; then Direction=$(grep -i "Direction" $ParFile | cut -f2); echo -e "${GREEN}Direction:\t$Direction${NOCOLOUR}";else Direction="nil";fi
 	if grep -i -q "Product" $ParFile; then Product=$(grep -i "Product" $ParFile | cut -f2); echo -e "${GREEN}Product:\t$Product${NOCOLOUR}";else Product="nil";fi
+
+  if grep -i -q "Reference" $ParFile; then RefGenome=$(grep -i "Reference" $ParFile | cut -f2); echo -e "${GREEN}Reference:\t$RefGenome${NOCOLOUR}";else RefGenome="nil";fi
+
 	sleep 1
 else
 	HomeDir="nil"
@@ -46,6 +49,9 @@ else
 	Minion_Flow="nil"
 	Minion_Kit="nil"
   Barcoded="nil"
+  Direction="nil"
+  Product="nil"
+  RefGenome="nil"
 fi
 
 if [ "$HomeDir" == "nil" ]; then
@@ -107,8 +113,9 @@ DIR_calledreads="$Dir/Called_reads"
 DIR_TrimmedReads="$Dir/PoreChop"
 DIR_FilteredReads="$Dir/FiltLong"
 DIR_ResultsSum="$Dir/Results_Summary"
+DIR_Alignment="$Dir/Alignments"
 DIR_canu="$Dir/canu"
-WorkerThreads="$CORES"
+WorkerThreads=$(($CORES * 2))
 
 if [ ! -d $DIR_ResultsSum ]; then
 	mkdir $DIR_ResultsSum
@@ -293,7 +300,10 @@ if [ "$RefGenome" == "nil" ]; then
 			if [ -e $RefGenome ]; then
 				Switch=1
 				echo -e "${BLUE}You entered: ${GREEN}$RefGenome${NOCOLOUR}"
-				echo -e "Reference genome	$RefGenome" >> $ParFile
+				echo -e "Reference genome\t$RefGenome" >> $ParFile
+        echo -e "${BLUE}Building reference genome index with minimap2${NOCOLOUR}"
+#        cp $RefGenome $Meta/ref.fa
+        minimap2 -d $Meta/ref.mmi $RefGenome /dev/null 2>&1
 #				if [ ! -e "$RefGenome.bwt" ]; then
 #					echo -e "${BLUE}Building bwa index from reference genome:${GREEN} $RefGenome ${NOCOLOUR}"
 #					bwa index $RefGenome
@@ -304,7 +314,7 @@ if [ "$RefGenome" == "nil" ]; then
 		else
 			Switch=1
 			RefGenome="None"
-			echo -e "Reference genome	$RefGenome" >> $ParFile
+			echo -e "Reference genome\t$RefGenome" >> $ParFile
 		fi
 	done
 fi
@@ -316,10 +326,7 @@ read sleeptime
 
 sleep "$sleeptime"
 
-
-
 # START WORKFLOW HERE
-
 
 if [ ! -d $DIR_calledreads ]; then
 	mkdir $DIR_calledreads
@@ -328,9 +335,9 @@ fi
 if [ ! -d $DIR_calledreads/workspace ]; then
 	#DETERMINE SCRIPT FOR 1D or 1D^2
 	if [ "$Direction" == "1D2" ]; then
-		$Albacore_Script = "full_1dsq_basecaller.py"
+		Albacore_Script="full_1dsq_basecaller.py"
 	else
-		$Albacore_Script = "read_fast5_basecaller.py"
+		Albacore_Script="read_fast5_basecaller.py"
 	fi
 	#PRINT INFO TO TERMINAL AND PROGRESS FILE
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
@@ -347,7 +354,12 @@ if [ ! -e "$DIR_ResultsSum/Stats-01-Called_reads.txt" ]; then
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Running NanoStat on called reads${NOCOLOUR}" | tee -a $Progress
 	NanoStat --version | tee -a $Progress
-	NanoStat --fastq "$DIR_calledreads/workspace/"* --readtype $Direction -t $WorkerThreads -n "$DIR_ResultsSum/Stats-01-Called_reads.txt"
+  if [ $Direction != "1D2" ]; then
+	   NanoStat --fastq "$DIR_calledreads/workspace/"*.fastq --readtype $Direction -t $WorkerThreads -n "$DIR_ResultsSum/Stats-01-Called_reads.txt"
+   else
+     NanoStat --fastq "$DIR_calledreads/workspace/"*.fastq --readtype $Direction -t $WorkerThreads -n "$DIR_ResultsSum/Stats-01-Called_reads.txt"
+     NanoStat --fastq "$DIR_calledreads/1dsq_analysis/workspace/"*.fastq --readtype $Direction -t $WorkerThreads -n "$DIR_ResultsSum/Stats-01-Called_reads_1D2.txt"
+   fi
 fi
 
 if [ ! -d $DIR_TrimmedReads ]; then
@@ -360,7 +372,12 @@ if [ ! -d $DIR_TrimmedReads ]; then
 	if [ $Barcoded == "TRUE" ]; then
 		porechop -i "$DIR_calledreads" -b "$DIR_TrimmedReads" -v 1
 	else
-		porechop -i "$DIR_calledreads" -o "$DIR_TrimmedReads/$Project.porechop.fastq"  -v 1
+    if [ $Direction != "1D2" ]; then
+      porechop -i "$DIR_calledreads/workspace/" -o "$DIR_TrimmedReads/$Project.porechop.fastq"  -v 1
+    else
+      porechop -i "$DIR_calledreads/workspace/" -o "$DIR_TrimmedReads/$Project.1D.porechop.fastq"  -v 1
+      porechop -i "$DIR_calledreads/1dsq_analysis/workspace/" -o "$DIR_TrimmedReads/$Project.1D2.porechop.fastq"  -v 1
+    fi
 	fi
 fi
 
@@ -373,8 +390,13 @@ if [ ! -e "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt" ]; then
 	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
 	NanoStat --version | tee -a $Progress
 	while read i; do
-		echo -e "$i.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
-		NanoStat --fastq "$DIR_TrimmedReads/$i.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+#      if [ $Direction != "1D2" ]; then
+		      echo -e "$i.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+          NanoStat --fastq "$DIR_TrimmedReads/$i.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+#      else
+#          echo -e "$i.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+#      fi
+
 	done < "$Meta/ReadFileNames.txt"
 fi
 
@@ -400,6 +422,22 @@ if [ ! -e "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt" ]; then
 		echo -e "$i.filtered.fastq" >> "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt"
 		NanoStat --fastq "$DIR_FilteredReads/$i.filtered.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt"
 	done < "$Meta/ReadFileNames.txt"
+fi
+
+# PRODUCE ALIGNMENT FOR EACH FILTLONG RESULT TO THE REFERENCE GENOME
+if [ "$RefGenome" != "nil" ] || [ "$RefGenome" != "None" ]; then
+  if [ ! -d $DIR_Alignment ]; then
+    mkdir $DIR_Alignment
+  fi
+  echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+  echo -e "${BLUE}Running Minimap2 on filtered reads against the provided reference: $RefGenome${NOCOLOUR}" | tee -a $Progress
+  while read i; do
+    if [ ! -e "$DIR_Alignment/$i.sam" ]; then
+      echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+    	echo -e "${BLUE}Running Minimap2 on $i${NOCOLOUR}" | tee -a $Progress
+      minimap2 -ax map-ont "$Meta/ref.mmi" "$DIR_FilteredReads/$i.filtered.fastq" > "$DIR_Alignment/$i.sam"
+    fi
+  done < "$Meta/ReadFileNames.txt"
 fi
 
 # MAKE THE DIRECTORY FOR EACH ASSEMBLY
