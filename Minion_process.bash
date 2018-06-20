@@ -326,14 +326,21 @@ if [ ! -d $DIR_calledreads ]; then
 fi
 
 if [ ! -d $DIR_calledreads/workspace ]; then
+	#DETERMINE SCRIPT FOR 1D or 1D^2
+	if [ "$Direction" == "1D2" ]; then
+		$Albacore_Script = "full_1dsq_basecaller.py"
+	else
+		$Albacore_Script = "read_fast5_basecaller.py"
+	fi
+	#PRINT INFO TO TERMINAL AND PROGRESS FILE
 	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Running Albacore on fast5 files${NOCOLOUR}" | tee -a $Progress
 	echo -e "${BLUE}Minion flow cell:${GREEN} $Minion_Flow${NOCOLOUR}"
 	echo -e "${BLUE}Minion kit:${GREEN} $Minion_Kit${NOCOLOUR}"
 	echo -e "${BLUE}Worker threads:${GREEN} $WorkerThreads${NOCOLOUR}"
-	read_fast5_basecaller.py -v | tee -a $Progress
-  echo $DIR_RawReads
-	read_fast5_basecaller.py -i $DIR_RawReads -s $DIR_calledreads -r -t $WorkerThreads -f $Minion_Flow -k $Minion_Kit -o fastq --disable_filtering
+	$Albacore_Script -v | tee -a $Progress
+ 	#RUN ALBACORE
+	$Albacore_Script -i $DIR_RawReads -s $DIR_calledreads -r -t $WorkerThreads -f $Minion_Flow -k $Minion_Kit -o fastq --disable_filtering
 fi
 
 if [ ! -e "$DIR_ResultsSum/Stats-01-Called_reads.txt" ]; then
