@@ -451,7 +451,7 @@ while read i; do
   	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
   	echo -e "${BLUE}Running canu on filtered $i.fastq${NOCOLOUR}" | tee -a $Progress
   	canu --version | tee -a $Progress
-  	canu -d $DIR_canu/$i -p $i genomeSize=10k -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+  	canu -d $DIR_canu/$i -p $i genomeSize=150k -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
   fi
 done < "$Meta/ReadFileNames.txt"
 
