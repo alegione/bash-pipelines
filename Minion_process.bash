@@ -23,66 +23,70 @@ echo -e "\e[4;$HEIGHT;${WIDTH}t"
 clear
 
 if [ -e "$1/Metadata/Parameters.txt" ]; then
-	echo -e "${BLUE}Parameter file detected...obtaining previously entered options${NOCOLOUR}"
-	ParFile="$1/Metadata/Parameters.txt"
-	Meta="$1/Metadata"
+  echo -e "${BLUE}Parameter file detected...obtaining previously entered options${NOCOLOUR}"
+  ParFile="$1/Metadata/Parameters.txt"
+  Meta="$1/Metadata"
+  DelayNeeded="FALSE"
 
-	if grep -i -q "User" $ParFile; then HomeDir=$(grep -i "User" $ParFile | cut -f2); echo -e "${GREEN}User:\t$HomeDir${NOCOLOUR}";else HomeDir="nil"; fi
-	if grep -i -q "Project" $ParFile; then Project=$(grep -i "Project" $ParFile | cut -f2); echo -e "${GREEN}Project directory:\t$Project${NOCOLOUR}";else Project="nil"; fi
-	if grep -i -q "Original reads" $ParFile; then DIR_RawReads=$(grep -i "Original reads" $ParFile | cut -f2); echo -e "${GREEN}Raw reads directory:\t$DIR_RawReads${NOCOLOUR}";else DIR_RawReads="nil";fi
-	if grep -i -q "Called reads" $ParFile; then DIR_calledreads=$(grep -i "Called reads" $ParFile | cut -f2); echo -e "${GREEN}Called reads directory:\t$DIR_calledreads${NOCOLOUR}";else DIR_calledreads="nil";fi
+  if grep -i -q "User" $ParFile; then HomeDir=$(grep -i "User" $ParFile | cut -f2); echo -e "${GREEN}User:\t$HomeDir${NOCOLOUR}";else HomeDir="nil"; fi
+  if grep -i -q "Project" $ParFile; then Project=$(grep -i "Project" $ParFile | cut -f2); echo -e "${GREEN}Project directory:\t$Project${NOCOLOUR}";else Project="nil"; fi
+  if grep -i -q "Original reads" $ParFile; then DIR_RawReads=$(grep -i "Original reads" $ParFile | cut -f2); echo -e "${GREEN}Raw reads directory:\t$DIR_RawReads${NOCOLOUR}";else DIR_RawReads="nil";fi
+  if grep -i -q "Called reads" $ParFile; then DIR_calledreads=$(grep -i "Called reads" $ParFile | cut -f2); echo -e "${GREEN}Called reads directory:\t$DIR_calledreads${NOCOLOUR}";else DIR_calledreads="nil";fi
 
-	if grep -i -q "Flow cell" $ParFile; then Minion_Flow=$(grep -i "Flow cell" $ParFile | cut -f2); echo -e "${GREEN}Flow cell:\t$Minion_Flow${NOCOLOUR}";else Minion_Flow="nil";fi
-	if grep -i -q "Kit" $ParFile; then Minion_Kit=$(grep -i "Kit" $ParFile | cut -f2); echo -e "${GREEN}Kit:\t$Minion_Kit${NOCOLOUR}";else Minion_Kit="nil";fi
+  if grep -i -q "Flow cell" $ParFile; then Minion_Flow=$(grep -i "Flow cell" $ParFile | cut -f2); echo -e "${GREEN}Flow cell:\t$Minion_Flow${NOCOLOUR}";else Minion_Flow="nil";fi
+  if grep -i -q "Kit" $ParFile; then Minion_Kit=$(grep -i "Kit" $ParFile | cut -f2); echo -e "${GREEN}Kit:\t$Minion_Kit${NOCOLOUR}";else Minion_Kit="nil";fi
   if grep -i -q "Barcoded" $ParFile; then Barcoded=$(grep -i "Barcoded" $ParFile | cut -f2); echo -e "${GREEN}Barcoded:\t$Barcoded${NOCOLOUR}";else Barcoded="nil";fi
-	if grep -i -q "Direction" $ParFile; then Direction=$(grep -i "Direction" $ParFile | cut -f2); echo -e "${GREEN}Direction:\t$Direction${NOCOLOUR}";else Direction="nil";fi
-	if grep -i -q "Product" $ParFile; then Product=$(grep -i "Product" $ParFile | cut -f2); echo -e "${GREEN}Product:\t$Product${NOCOLOUR}";else Product="nil";fi
+  if grep -i -q "Direction" $ParFile; then Direction=$(grep -i "Direction" $ParFile | cut -f2); echo -e "${GREEN}Direction:\t$Direction${NOCOLOUR}";else Direction="nil";fi
+  if grep -i -q "Product" $ParFile; then Product=$(grep -i "Product" $ParFile | cut -f2); echo -e "${GREEN}Product:\t$Product${NOCOLOUR}";else Product="nil";fi
 
-  if grep -i -q "Reference" $ParFile; then RefGenome=$(grep -i "Reference" $ParFile | cut -f2); echo -e "${GREEN}Reference:\t$RefGenome${NOCOLOUR}";else RefGenome="nil";fi
-
-	sleep 1
+  if grep -i -q "Reference genome" $ParFile; then RefGenome=$(grep -i "Reference genome" $ParFile | cut -f2); echo -e "${GREEN}Reference genome:\t$RefGenome${NOCOLOUR}";else RefGenome="nil";fi
+  if grep -i -q "Reference length" $ParFile; then RefLength=$(grep -i "Reference length" $ParFile | cut -f2); echo -e "${GREEN}Reference length:\t$RefLength${NOCOLOUR}";else RefLength="nil";fi
+  sleep 1
+  
 else
-	HomeDir="nil"
-	Project="nil"
-	DIR_RawReads="nil"
-	DIR_calledreads="nil"
-	Minion_Flow="nil"
-	Minion_Kit="nil"
+  DelayNeeded="TRUE"
+  HomeDir="nil"
+  Project="nil"
+  DIR_RawReads="nil"
+  DIR_calledreads="nil"
+  Minion_Flow="nil"
+  Minion_Kit="nil"
   Barcoded="nil"
   Direction="nil"
   Product="nil"
   RefGenome="nil"
+  RefLength="nil"
 fi
 
 if [ "$HomeDir" == "nil" ]; then
 
-	Switch=0
-	while [ "$Switch" -eq "0" ]; do
-		echo -e "${BLUE}Please enter your home directory ${YELLOW}(eg: Student/YOURNAME):${NOCOLOUR}"
-		read -e HomeDir
-		HomeDir=$(printf $HomeDir | sed 's/\/$//')
-		echo $HomeDir
-		if [ ! -d $HomeDir ]; then
-			echo -e "${RED}No directory of that name exists${NOCOLOUR}"
-			echo -e "Would you like to create it? (Y/N)${NOCOLOUR}"
-			read -N 1 yesno
-			yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
-			if [ $yesno = "y" ]; then
-				mkdir $HomeDir
-				Switch=1
-			fi
-		else
-			echo -e "${BLUE}You entered: ${GREEN}$HomeDir${NOCOLOUR}"
-			Switch=1
-		fi
-	done
+  Switch=0
+  while [ "$Switch" -eq "0" ]; do
+    echo -e "${BLUE}Please enter your home directory ${YELLOW}(eg: Student/YOURNAME):${NOCOLOUR}"
+    read -e HomeDir
+    HomeDir=$(printf $HomeDir | sed 's/\/$//')
+    if [ ! -d $HomeDir ]; then
+      echo -e "${RED}No directory of that name exists${NOCOLOUR}"
+      echo -e "Would you like to create it? (Y/N)${NOCOLOUR}"
+      read -N 1 yesno
+      echo -e ""
+      yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
+      if [ $yesno = "y" ]; then
+        mkdir $HomeDir
+        Switch=1
+      fi
+    else
+      echo -e "${BLUE}You entered: ${GREEN}$HomeDir${NOCOLOUR}"
+      Switch=1
+    fi
+  done
 fi
 
 
 if [ "$Project" == "nil" ]; then
-	echo -e "${BLUE}Please enter a project title:${NOCOLOUR}"
-	read Project
-	echo -e "${BLUE}You entered: ${GREEN}$Project${NOCOLOUR}"
+  echo -e "${BLUE}Please enter a project title:${NOCOLOUR}"
+  read Project
+  echo -e "${BLUE}You entered: ${GREEN}$Project${NOCOLOUR}"
 fi
 
 
@@ -287,44 +291,48 @@ fi
 if ! grep -i -q "Original reads" $ParFile; then echo -e "Original reads\t$DIR_RawReads" >> $ParFile; fi
 
 if [ "$RefGenome" == "nil" ]; then
-	#Asks for path a reference genome
-	Switch=0
-	while [ "$Switch" -eq "0" ]; do
-		echo -e "${BLUE}Would you like to use a reference genome in downstream analysis (Y/N)?${NOCOLOUR}"
-		read -N 1 yesno
-		echo "" #adds a new line
-		yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
-		if [ "$yesno" == "y" ]; then
-			echo -e "${BLUE}Please enter the file location of your reference genome (in fasta format):${NOCOLOUR}"
-			read -e RefGenome
-			if [ -e $RefGenome ]; then
-				Switch=1
-				echo -e "${BLUE}You entered: ${GREEN}$RefGenome${NOCOLOUR}"
-				echo -e "Reference genome\t$RefGenome" >> $ParFile
+  #Asks for path a reference genome
+  Switch=0
+  while [ "$Switch" -eq "0" ]; do
+    echo -e "${BLUE}Would you like to use a reference genome in downstream analysis (Y/N)?${NOCOLOUR}"
+    read -N 1 yesno
+    echo "" #adds a new line    
+    yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
+    if [ "$yesno" == "y" ]; then
+      echo -e "${BLUE}Please enter the file location of your reference genome (in fasta format):${NOCOLOUR}"
+      read -e RefGenome
+      if [ -e $RefGenome ]; then
+        Switch=1
+        echo -e "${BLUE}You entered: ${GREEN}$RefGenome${NOCOLOUR}"
+        echo -e "Reference genome\t$RefGenome" >> $ParFile
         echo -e "${BLUE}Building reference genome index with minimap2${NOCOLOUR}"
-#        cp $RefGenome $Meta/ref.fa
-        minimap2 -d $Meta/ref.mmi $RefGenome /dev/null 2>&1
-#				if [ ! -e "$RefGenome.bwt" ]; then
-#					echo -e "${BLUE}Building bwa index from reference genome:${GREEN} $RefGenome ${NOCOLOUR}"
-#					bwa index $RefGenome
-#				fi
-			else
-				echo -e "${RED}File does not exist: ${GREEN}$RefGenome${NOCOLOUR}"
-			fi
-		else
-			Switch=1
-			RefGenome="None"
-			echo -e "Reference genome\t$RefGenome" >> $ParFile
-		fi
-	done
+#       cp $RefGenome $Meta/ref.fa
+        minimap2 -d $Meta/ref.mmi $RefGenome > /dev/null 2>&1
+#       if [ ! -e "$RefGenome.bwt" ]; then
+#         echo -e "${BLUE}Building bwa index from reference genome:${GREEN} $RefGenome ${NOCOLOUR}"
+#         bwa index $RefGenome
+#       fi
+        RefLength=$(cat $RefGenome | awk '$0 !~ ">" {c+=length($0);} END { print c; }')
+	echo -e "Reference length\t$RefLength" >> $ParFile
+      else
+        echo -e "${RED}File does not exist: ${GREEN}$RefGenome${NOCOLOUR}"
+      fi
+    else
+      Switch=1
+      RefGenome="None"
+      echo -e "${BLUE}Please enter an approximate length of your target (in bp):${NOCOLOUR}"
+      read -e RefLength
+      echo -e "Reference length\t$RefLength" >> $ParFile
+    fi
+  done
 fi
 
 #### SLEEP FOR HOW LONG BEFORE STARTING??
-
-echo -e "${BLUE}How long to sleep for before starting (eg. for 2 hours type: 2h): ${NOCOLOUR}"
-read sleeptime
-
-sleep "$sleeptime"
+if [ $DelayNeeded == "TRUE" ]; then
+  echo -e "${BLUE}How long to sleep for before starting (eg. for 2 hours type: 2h): ${NOCOLOUR}"
+  read sleeptime
+  sleep "$sleeptime"
+fi
 
 # START WORKFLOW HERE
 
@@ -363,41 +371,41 @@ if [ ! -e "$DIR_ResultsSum/Stats-01-Called_reads.txt" ]; then
 fi
 
 if [ ! -d $DIR_TrimmedReads ]; then
-	mkdir $DIR_TrimmedReads
-	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-	echo -e "${BLUE}Running PoreChop on called reads to remove adapters${NOCOLOUR}" | tee -a $Progress
-	echo -e "Porechop version: $(porechop --version)" | tee -a $Progress
+  mkdir $DIR_TrimmedReads
+  echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+  echo -e "${BLUE}Running PoreChop on called reads to remove adapters${NOCOLOUR}" | tee -a $Progress
+  echo -e "Porechop version: $(porechop --version)" | tee -a $Progress
 
 # NEED TO CHECK STDERR FOR OUTPUT ALSO OR PLACE IN TEMP AND REMOVE ADAPTERS FOR PROGRESS PAGE
-	if [ $Barcoded == "TRUE" ]; then
-		porechop -i "$DIR_calledreads" -b "$DIR_TrimmedReads" -v 1
-	else
+  if [ $Barcoded == "TRUE" ]; then
+    porechop -i "$DIR_calledreads" -b "$DIR_TrimmedReads" -v 1
+  else
     if [ $Direction != "1D2" ]; then
       porechop -i "$DIR_calledreads/workspace/" -o "$DIR_TrimmedReads/$Project.porechop.fastq"  -v 1
     else
       porechop -i "$DIR_calledreads/workspace/" -o "$DIR_TrimmedReads/$Project.1D.porechop.fastq"  -v 1
       porechop -i "$DIR_calledreads/1dsq_analysis/workspace/" -o "$DIR_TrimmedReads/$Project.1D2.porechop.fastq"  -v 1
     fi
-	fi
+  fi
 fi
 
 # COLLECT NAMES OF FILES FROM PORECHOP OUTPUT
-	basename -a -s ".fastq" $DIR_TrimmedReads/* > "$Meta/ReadFileNames.txt"
+  basename -a -s ".porechop.fastq" $DIR_TrimmedReads/* > "$Meta/ReadFileNames.txt"
 
 # PRODUCE STATS FOR EACH PORECHOP RESULT
 if [ ! -e "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt" ]; then
-	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-	echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
-	NanoStat --version | tee -a $Progress
-	while read i; do
+  echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+  echo -e "${BLUE}Running NanoStat on trimmed reads${NOCOLOUR}" | tee -a $Progress
+  NanoStat --version | tee -a $Progress
+  while read i; do
 #      if [ $Direction != "1D2" ]; then
-		      echo -e "$i.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
-          NanoStat --fastq "$DIR_TrimmedReads/$i.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+    echo -e "$i.porechop.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
+    NanoStat --fastq "$DIR_TrimmedReads/$i.porechop.fastq" --readtype $Direction -t $WorkerThreads >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
 #      else
 #          echo -e "$i.fastq" >> "$DIR_ResultsSum/Stats-02-PoreChop_reads.txt"
 #      fi
 
-	done < "$Meta/ReadFileNames.txt"
+  done < "$Meta/ReadFileNames.txt"
 fi
 
 # FILTER READS WITH FILTLONG
@@ -408,8 +416,8 @@ if [ ! -d $DIR_FilteredReads ]; then
 	filtlong --version | tee -a $Progress
 	while read i; do
 		echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-		echo -e "${GREEN}Filtering $i.fastq and saving as $i.filtered.fastq${NOCOLOUR}" | tee -a $Progress
-		filtlong --min_length 1000 --keep_percent 90 --target_bases 500000000 "$DIR_TrimmedReads/$i.fastq" > "$DIR_FilteredReads/$i.filtered.fastq"
+		echo -e "${GREEN}Filtering $i.porechop.fastq and saving as $i.filtered.fastq${NOCOLOUR}" | tee -a $Progress
+		filtlong --min_length 500 --keep_percent 90 "$DIR_TrimmedReads/$i.porechop.fastq" > "$DIR_FilteredReads/$i.filtered.fastq"
 	done < "$Meta/ReadFileNames.txt"
 fi
 
@@ -465,9 +473,9 @@ while read i; do
   	echo -e "${BLUE}Running canu on filtered $i.fastq${NOCOLOUR}" | tee -a $Progress
   	canu --version | tee -a $Progress
 	if [ "$Product" == "DNA" ]; then
-          canu -d $DIR_canu/$i -p $i genomeSize=150k -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+          canu -d $DIR_canu/$i -p $i genomeSize=$RefLength -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
 	else
-	  canu -d $DIR_canu/$i -p $i genomeSize=150k -nanopore-raw "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
+	  canu -d $DIR_canu/$i -p $i genomeSize=$RefLength -nanopore-raw "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
 	fi
   fi
 done < "$Meta/ReadFileNames.txt"
