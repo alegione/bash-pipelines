@@ -434,7 +434,7 @@ if [ "$RefGenome" != "nil" ] || [ "$RefGenome" != "None" ]; then
   while read i; do
     if [ ! -e "$DIR_Alignment/$i.sam" ]; then
       echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-    	echo -e "${BLUE}Running Minimap2 on $i${NOCOLOUR}" | tee -a $Progress
+      echo -e "${BLUE}Running Minimap2 on $i${NOCOLOUR}" | tee -a $Progress
       minimap2 -ax map-ont "$Meta/ref.mmi" "$DIR_FilteredReads/$i.filtered.fastq" > "$DIR_Alignment/$i.sam"
     fi
   done < "$Meta/ReadFileNames.txt"
@@ -442,7 +442,20 @@ fi
 
 # MAKE THE DIRECTORY FOR EACH ASSEMBLY
 if [ ! -d $DIR_canu ]; then
-	mkdir $DIR_canu
+  mkdir $DIR_canu
+fi
+
+if [ "$Product" == "RNA" ]; then
+  if [ ! -d $DIR_canu/RNAtoDNA ]; then
+    mkdir $DIR_canu/RNAtoDNA
+  fi
+  while read i; do
+    if [ ! -e "$DIR_canu/RNAtoDNA/$i.DNA.fastq" ]; then
+      echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+      echo -e "${BLUE}Converting U to T in $i filtered fastq file${NOCOLOUR}" | tee -a $Progress
+      awk 'NR % 4 == 2 {$1;for (i=1;i<=NF;i++) {gsub(/U/,"T",$i); printf "%s\n",$i}} NR % 4 != 2 { print }' "$DIR_FilteredReads/$i.filtered.fastq" > "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
+    fi
+  done
 fi
 
 # ASSEMBLE EACH FILE IN CANU, NEED TO UPDATE genomeSize BASED ON REFERENCE, OR ASK AT THE SAME INITIAL PROMPT, THIS WON'T WORK FOR MULTIPLE GENOMES OR REFERENCES THOUGH
@@ -451,7 +464,11 @@ while read i; do
   	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
   	echo -e "${BLUE}Running canu on filtered $i.fastq${NOCOLOUR}" | tee -a $Progress
   	canu --version | tee -a $Progress
-  	canu -d $DIR_canu/$i -p $i genomeSize=150k -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+	if [ "$Product" == "DNA" ]; then
+          canu -d $DIR_canu/$i -p $i genomeSize=150k -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+	else
+	  canu -d $DIR_canu/$i -p $i genomeSize=150k -nanopore-raw "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
+	fi
   fi
 done < "$Meta/ReadFileNames.txt"
 
