@@ -42,7 +42,7 @@ if [ -e "$1/Metadata/Parameters.txt" ]; then
   if grep -i -q "Reference genome" $ParFile; then RefGenome=$(grep -i "Reference genome" $ParFile | cut -f2); echo -e "${GREEN}Reference genome:\t$RefGenome${NOCOLOUR}";else RefGenome="nil";fi
   if grep -i -q "Reference length" $ParFile; then RefLength=$(grep -i "Reference length" $ParFile | cut -f2); echo -e "${GREEN}Reference length:\t$RefLength${NOCOLOUR}";else RefLength="nil";fi
   sleep 1
-  
+
 else
   DelayNeeded="TRUE"
   HomeDir="nil"
@@ -296,7 +296,7 @@ if [ "$RefGenome" == "nil" ]; then
   while [ "$Switch" -eq "0" ]; do
     echo -e "${BLUE}Would you like to use a reference genome in downstream analysis (Y/N)?${NOCOLOUR}"
     read -N 1 yesno
-    echo "" #adds a new line    
+    echo "" #adds a new line
     yesno=$(echo -e "$yesno" | tr '[:upper:]' '[:lower:]')
     if [ "$yesno" == "y" ]; then
       echo -e "${BLUE}Please enter the file location of your reference genome (in fasta format):${NOCOLOUR}"
@@ -328,11 +328,11 @@ if [ "$RefGenome" == "nil" ]; then
 fi
 
 #### SLEEP FOR HOW LONG BEFORE STARTING??
-if [ $DelayNeeded == "TRUE" ]; then
+#if [ $DelayNeeded == "TRUE" ]; then
   echo -e "${BLUE}How long to sleep for before starting (eg. for 2 hours type: 2h): ${NOCOLOUR}"
   read sleeptime
   sleep "$sleeptime"
-fi
+#fi
 
 # START WORKFLOW HERE
 
@@ -463,7 +463,7 @@ if [ "$Product" == "RNA" ]; then
       echo -e "${BLUE}Converting U to T in $i filtered fastq file${NOCOLOUR}" | tee -a $Progress
       awk 'NR % 4 == 2 {$1;for (i=1;i<=NF;i++) {gsub(/U/,"T",$i); printf "%s\n",$i}} NR % 4 != 2 { print }' "$DIR_FilteredReads/$i.filtered.fastq" > "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
     fi
-  done
+  done < "$Meta/ReadFileNames.txt"
 fi
 
 # ASSEMBLE EACH FILE IN CANU, NEED TO UPDATE genomeSize BASED ON REFERENCE, OR ASK AT THE SAME INITIAL PROMPT, THIS WON'T WORK FOR MULTIPLE GENOMES OR REFERENCES THOUGH
@@ -473,7 +473,8 @@ while read i; do
   	echo -e "${BLUE}Running canu on filtered $i.fastq${NOCOLOUR}" | tee -a $Progress
   	canu --version | tee -a $Progress
 	if [ "$Product" == "DNA" ]; then
-          canu -d $DIR_canu/$i -p $i genomeSize=$RefLength -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+#          canu -d $DIR_canu/$i -p $i genomeSize=$RefLength minMemory-nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
+          canu -d $DIR_canu/$i -p $i batMemory=32 genomeSize=$RefLength minMemory-nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
 	else
 	  canu -d $DIR_canu/$i -p $i genomeSize=$RefLength -nanopore-raw "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
 	fi
