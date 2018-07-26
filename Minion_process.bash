@@ -443,7 +443,11 @@ if [ "$RefGenome" != "nil" ] || [ "$RefGenome" != "None" ]; then
     if [ ! -e "$DIR_Alignment/$i.sam" ]; then
       echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
       echo -e "${BLUE}Running Minimap2 on $i${NOCOLOUR}" | tee -a $Progress
-      minimap2 -ax map-ont "$Meta/ref.mmi" "$DIR_FilteredReads/$i.filtered.fastq" > "$DIR_Alignment/$i.sam"
+      minimap2 -L -ax map-ont "$Meta/ref.mmi" "$DIR_FilteredReads/$i.filtered.fastq" > "$DIR_Alignment/$i.sam"
+            samtools view -h -S -F 4 "$DIR_Alignment/$i.sam" > "$DIR_Alignment/$i.aligned.sam"
+            samtools sort --output-fmt SAM --threads $CORES "$DIR_Alignment/$i.aligned.sam" > "$DIR_Alignment/$i.sort.sam"
+            cut -f1 "$DIR_Alignment/$i.sort.sam" | sort | uniq -c | grep "2 " | cut -f8 -d " " > "$DIR_Alignment/$i.dups.txt"
+            grep -v --file="$DIR_Alignment/$i.dups.txt" "$DIR_Alignment/$i.sort.sam" > "$DIR_Alignment/$i.nodups.sam"
     fi
   done < "$Meta/ReadFileNames.txt"
 fi
