@@ -290,10 +290,10 @@ fi
 
 if ! grep -i -q "Original reads" $ParFile; then echo -e "Original reads\t$DIR_RawReads" >> $ParFile; fi
 
-if [ "$RefGenome" == "nil" ]; then
+if [ "$RefLength" == "nil" ]; then
   #Asks for path a reference genome
   Switch=0
-  while [ "$Switch" -eq "0" ]; do
+  while [ "$Switch" -eq "0" ]; dobrew switch python 3.6.5
     echo -e "${BLUE}Would you like to use a reference genome in downstream analysis (Y/N)?${NOCOLOUR}"
     read -N 1 yesno
     echo "" #adds a new line
