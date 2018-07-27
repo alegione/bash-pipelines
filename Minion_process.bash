@@ -909,7 +909,10 @@ if [ ! -e "$DIR_ResultsSum/Stats-03-FiltLong_reads.txt" ]; then
 fi
 
 # PRODUCE ALIGNMENT FOR EACH FILTLONG RESULT TO THE REFERENCE GENOME
-if [ "$RefGenome" != "nil" ] || [ "$RefGenome" != "None" ]; then
+if [ "$RefGenome" == "nil" ] || [ "$RefGenome" == "None" ]; then
+  echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
+  echo -e "${BLUE}No alignment files will be generated${NOCOLOUR}" | tee -a $Progress
+else
   if [ ! -d $DIR_Alignment ]; then
     mkdir $DIR_Alignment
   fi
@@ -956,27 +959,6 @@ while read i; do
           canu -d $DIR_canu/$i -p $i minOverlapLength=100 minReadLength=200 genomeSize=$RefLength -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
 	else
 	  canu -d $DIR_canu/$i -p $i minOverlapLength=100 minReadLength=200 genomeSize=$RefLength -nanopore-raw "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
-	fi
-  fi
-done < "$Meta/ReadFileNames.txt"
-
-# CLEAN UP PROGRESS TEXT FILE TO REMOVE SPECIAL CHARACTERS THAT DENOTE COLOUR
-sed -i 's/\x1b\[[0-9;]*m//g' $Progress
-
-  done < "$Meta/ReadFileNames.txt"
-fi
-
-# ASSEMBLE EACH FILE IN CANU, NEED TO UPDATE genomeSize BASED ON REFERENCE, OR ASK AT THE SAME INITIAL PROMPT, THIS WON'T WORK FOR MULTIPLE GENOMES OR REFERENCES THOUGH
-while read i; do
-  if [ ! -e "$DIR_canu/$i/$i.contigs.fasta" ]; then
-  	echo -e "${PURPLE}$(date)${NOCOLOUR}" | tee -a $Progress
-  	echo -e "${BLUE}Running canu on filtered $i.fastq${NOCOLOUR}" | tee -a $Progress
-  	canu --version | tee -a $Progress
-	if [ "$Product" == "DNA" ]; then
-#          canu -d $DIR_canu/$i -p $i genomeSize=$RefLength minMemory-nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
-          canu -d $DIR_canu/$i -p $i genomeSize=$RefLength -nanopore-raw "$DIR_FilteredReads/$i.filtered.fastq"
-	else
-	  canu -d $DIR_canu/$i -p $i genomeSize=$RefLength -nanopore-raw "$DIR_canu/RNAtoDNA/$i.DNA.fastq"
 	fi
   fi
 done < "$Meta/ReadFileNames.txt"
